@@ -1,0 +1,163 @@
+GOVERNMENT OF INDIA
+MINISTRY OF URBAN DEVELOPMENT
+
+NATIONAL URBAN PUBLIC TRANSPORT ACCESSIBILITY AND SERVICE IMPROVEMENT POLICY, 2026
+Policy Document — Draft for Public Consultation
+
+Policy Reference: NUPT-ASIP/2026
+Policy Status: Draft
+Issuing Authority: Ministry of Urban Development
+Year: 2026
+
+Note: This is a policy document created for software testing and public consultation.
+
+--------------------------------------------------------------------------------
+CONTENTS
+--------------------------------------------------------------------------------
+1. Introduction
+2. Background and Need for the Policy
+3. Vision
+4. Objectives
+5. Scope and Applicability
+6. Policy Principles
+7. Key Policy Provisions
+8. Institutional Framework
+9. Implementation Framework
+10. Funding and Financial Support
+11. Data, Technology and Monitoring
+12. Citizen Participation and Public Consultation
+13. Expected Outcomes
+14. Review and Evaluation
+15. Conclusion
+
+--------------------------------------------------------------------------------
+1. Introduction
+--------------------------------------------------------------------------------
+The National Urban Public Transport Accessibility and Service Improvement Policy, 2026 establishes a common policy framework for improving the availability, accessibility, reliability and quality of public transport in urban areas. The policy seeks to support cities in developing public transport systems that are affordable, safe, inclusive and responsive to the needs of residents.
+
+The policy recognizes public transport as an essential urban service. It promotes coordinated planning between bus services, mass rapid transit systems, pedestrian infrastructure, cycling facilities and other forms of shared mobility. The framework also encourages the use of technology and evidence-based planning to improve service delivery.
+
+--------------------------------------------------------------------------------
+2. Background and Need for the Policy
+--------------------------------------------------------------------------------
+Rapid urbanisation has increased the demand for reliable mobility within cities. Growth in population and travel demand has placed pressure on existing public transport networks and has contributed to congestion, longer travel times and increased dependence on private vehicles.
+
+Several cities experience gaps in last-mile connectivity, inconsistent service frequency, limited passenger information and inadequate facilities for persons with disabilities and senior citizens. Differences in service quality between urban areas also make it difficult to establish consistent standards for accessible and citizen-oriented public transport.
+
+The policy therefore provides a broad framework under which urban authorities can assess local requirements, improve public transport services and involve citizens in decisions concerning mobility infrastructure and service delivery.
+
+--------------------------------------------------------------------------------
+3. Vision
+--------------------------------------------------------------------------------
+To create an inclusive, accessible, affordable and reliable urban public transport system that enables residents to travel safely and efficiently while supporting sustainable urban development.
+
+--------------------------------------------------------------------------------
+4. Objectives
+--------------------------------------------------------------------------------
+The policy has the following objectives:
+• Improve the reliability and frequency of urban public transport services.
+• Increase accessibility of public transport infrastructure for persons with disabilities, senior citizens and other users with mobility needs.
+• Strengthen last-mile connectivity between residential areas, employment centres and major transport hubs.
+• Promote affordable public transport and improve access to information about routes, fares and service schedules.
+• Encourage environmentally sustainable modes of urban mobility.
+• Establish mechanisms for collecting, analysing and responding to citizen feedback.
+• Promote data-driven planning and performance monitoring by urban transport authorities.
+
+--------------------------------------------------------------------------------
+5. Scope and Applicability
+--------------------------------------------------------------------------------
+The policy applies to urban and metropolitan areas implementing or planning public transport improvement programmes. State governments, urban local bodies, metropolitan transport authorities and public transport operating agencies may adopt the framework according to local requirements.
+
+The policy covers public bus systems, mass transit services, interchange facilities, last-mile connectivity, passenger information systems and supporting pedestrian and cycling infrastructure. Cities may introduce additional measures based on local travel patterns and infrastructure conditions.
+
+--------------------------------------------------------------------------------
+6. Policy Principles
+--------------------------------------------------------------------------------
+Implementation of the policy shall be guided by the following principles:
+• Accessibility: Public transport infrastructure and services should be usable by the widest possible range of passengers.
+• Affordability: Public transport should remain economically accessible to residents across income groups.
+• Reliability: Service planning should seek to reduce avoidable delays and excessive passenger waiting times.
+• Sustainability: Transport planning should encourage efficient use of energy and reduce unnecessary dependence on private vehicles.
+• Safety: Passenger safety should be considered in infrastructure design, service operations and information systems.
+• Transparency: Service information and relevant performance indicators should be made available to the public where appropriate.
+• Citizen participation: Residents should have meaningful opportunities to provide feedback on transport services and proposed improvements.
+
+--------------------------------------------------------------------------------
+7. Key Policy Provisions
+--------------------------------------------------------------------------------
+7.1 Service Planning and Reliability
+Urban transport authorities should establish service plans based on passenger demand, route coverage and connectivity requirements. Major routes should be assessed periodically to identify inadequate frequency, overcrowding and long passenger waiting times.
+
+7.2 Accessibility
+Transport authorities should progressively improve accessibility at major bus terminals, railway and metro interfaces and other high-use facilities. Measures may include ramps, accessible entrances, appropriate signage, seating and facilities that support passengers with different mobility requirements.
+
+7.3 Last-Mile Connectivity
+Cities should identify gaps between public transport stations and surrounding residential, commercial and institutional areas. Appropriate solutions may include feeder services, pedestrian improvements, cycling facilities and regulated shared mobility services.
+
+7.4 Passenger Information
+Transport agencies should provide clear information on routes, fares, operating schedules, changes in service and major disruptions. Digital information systems may be used alongside physical information facilities at transport locations.
+
+7.5 Affordability
+Urban authorities should periodically review fare structures and consider the affordability of public transport for different categories of passengers. Where appropriate, targeted concessions or other support mechanisms may be considered.
+
+7.6 Environmental Sustainability
+Cities should consider low-emission and energy-efficient transport technologies when procuring or upgrading public transport fleets. Non-motorised transport infrastructure should be integrated with public transport planning where feasible.
+
+7.7 Citizen Feedback
+Public transport authorities should establish structured mechanisms through which passengers can report service problems and provide views on proposed improvements. Feedback should be categorised and periodically reviewed to identify recurring issues and emerging priorities.
+
+--------------------------------------------------------------------------------
+8. Institutional Framework
+--------------------------------------------------------------------------------
+The Ministry of Urban Development shall provide overall policy guidance and facilitate coordination among relevant authorities. State governments may establish implementation frameworks and coordinate activities across cities within their jurisdiction. Urban local bodies and metropolitan transport authorities shall be responsible for local planning, implementation, service monitoring and citizen engagement in accordance with applicable laws and administrative arrangements. Public transport operators shall implement service-level measures and provide operational data required for monitoring and evaluation.
+
+--------------------------------------------------------------------------------
+9. Implementation Framework
+--------------------------------------------------------------------------------
+Implementation may be undertaken in phases based on the existing infrastructure, financial capacity and transport requirements of each city.
+In the initial phase, cities should conduct a baseline assessment covering service frequency, route coverage, accessibility, affordability, passenger information and last-mile connectivity.
+In the subsequent phase, authorities should identify priority interventions and establish measurable service improvement targets. Implementation should focus first on high-demand corridors and locations where accessibility or connectivity gaps are significant.
+Authorities should periodically review implementation progress and revise interventions based on performance data and citizen feedback.
+
+--------------------------------------------------------------------------------
+10. Funding and Financial Support
+--------------------------------------------------------------------------------
+Implementation may be supported through central assistance, state government allocations, urban local body resources, public transport operator revenues and other permissible sources of financing.
+Financial support should give appropriate consideration to projects that improve accessibility, strengthen public transport connectivity, improve passenger information and support sustainable mobility.
+Authorities receiving public financial assistance should maintain appropriate records of expenditure and implementation progress and provide information required for monitoring.
+
+--------------------------------------------------------------------------------
+11. Data, Technology and Monitoring
+--------------------------------------------------------------------------------
+Transport authorities should establish systems for collecting relevant operational and passenger information. Data may include service frequency, passenger demand, waiting times, route performance, accessibility coverage and citizen feedback.
+Technology may be used to provide passenger information, monitor service performance and support evidence-based transport planning. Data systems should be designed with appropriate safeguards for information security and privacy.
+Performance indicators should be reviewed periodically. Monitoring results should be used to identify service gaps and guide future investments and operational improvements.
+
+--------------------------------------------------------------------------------
+12. Citizen Participation and Public Consultation
+--------------------------------------------------------------------------------
+Citizen participation is an important component of the policy. Authorities should provide accessible mechanisms for residents to express their views on public transport services and proposed interventions.
+Consultations may include structured questionnaires, public meetings, digital feedback platforms and other appropriate methods. Questions may address service reliability, affordability, safety, accessibility, environmental considerations, connectivity and investment priorities.
+Feedback should be analysed systematically so that both measurable preferences and detailed written views can be considered during policy and service planning.
+Authorities should communicate, where appropriate, how significant public feedback has been considered in subsequent decisions.
+
+--------------------------------------------------------------------------------
+13. Expected Outcomes
+--------------------------------------------------------------------------------
+Implementation of the policy is expected to improve the quality and reliability of urban public transport and increase access for passengers with different mobility requirements.
+The policy is also expected to strengthen last-mile connectivity, improve the availability of passenger information, support sustainable mobility and establish more consistent mechanisms for citizen participation.
+Over time, improved monitoring and evidence-based planning should enable authorities to identify service deficiencies and allocate resources towards areas with the greatest public benefit.
+
+--------------------------------------------------------------------------------
+14. Review and Evaluation
+--------------------------------------------------------------------------------
+The implementation of the policy should be reviewed periodically by the appropriate authorities. Reviews should consider progress against identified service indicators, implementation challenges, financial requirements and citizen feedback.
+Where monitoring indicates that policy measures are not achieving intended outcomes, authorities may revise implementation strategies, introduce additional measures or modify priorities based on evidence.
+
+--------------------------------------------------------------------------------
+15. Conclusion
+--------------------------------------------------------------------------------
+The National Urban Public Transport Accessibility and Service Improvement Policy, 2026 provides a common framework for developing public transport systems that are accessible, reliable, affordable and sustainable. Its implementation is intended to strengthen coordination among public authorities and transport operators while placing citizen needs and evidence-based planning at the centre of urban mobility improvement.
+The policy encourages cities to adapt the framework to local conditions while maintaining a consistent focus on accessibility, service quality, sustainability, transparency and meaningful public participation.
+
+END OF POLICY DOCUMENT
