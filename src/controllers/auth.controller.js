@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -8,6 +9,29 @@ const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
+};
+
+/**
+ * Helper to generate and persist access + refresh tokens in DB
+ */
+const generateAccessAndRefreshTokens = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false });
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+        throw new ApiError(500, "Something went wrong while generating tokens");
+    }
 };
 
 /**
@@ -53,7 +77,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         role,
     });
 
-    const accessToken = user.generateAccessToken();
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
     const createdUser = {
         _id: user._id,
@@ -66,17 +90,18 @@ export const registerUser = asyncHandler(async (req, res) => {
     return res
         .status(201)
         .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .json(
             new ApiResponse(
                 201,
-                { user: createdUser, accessToken },
+                { user: createdUser, accessToken, refreshToken },
                 `User registered successfully as ${role}`
             )
         );
 });
 
 /**
- * @desc    Login user & get token (Role detected automatically from account)
+ * @desc    Login user & get tokens (Role detected automatically from account)
  * @route   POST /api/v1/auth/login
  * @access  Public
  */
@@ -101,7 +126,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid email or password");
     }
 
-    // Optional role check (e.g. if logging into an admin-only portal)
+    // Optional role check
     if (expectedRole && user.role !== expectedRole) {
         throw new ApiError(
             403,
@@ -109,7 +134,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         );
     }
 
-    const accessToken = user.generateAccessToken();
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
 
     const loggedInUser = {
         _id: user._id,
@@ -121,24 +146,82 @@ export const loginUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
         .json(
             new ApiResponse(
                 200,
-                { user: loggedInUser, accessToken },
+                { user: loggedInUser, accessToken, refreshToken },
                 `Login successful as ${user.role}`
             )
         );
 });
 
 /**
- * @desc    Logout user / clear token cookie
+ * @desc    Refresh access token using valid refresh token
+ * @route   POST /api/v1/auth/refresh-token
+ * @access  Public (Requires valid refresh token)
+ */
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken =
+        req.cookies?.refreshToken || req.body?.refreshToken;
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "Unauthorized: Refresh token is required");
+    }
+
+    try {
+        const decodedToken = jwt.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        const user = await User.findById(decodedToken?._id);
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh token: user not found");
+        }
+
+        if (incomingRefreshToken !== user?.refreshToken) {
+            throw new ApiError(401, "Refresh token is expired or has been revoked");
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } =
+            await generateAccessAndRefreshTokens(user._id);
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .cookie("refreshToken", newRefreshToken, cookieOptions)
+            .json(
+                new ApiResponse(
+                    200,
+                    { accessToken, refreshToken: newRefreshToken },
+                    "Access token refreshed successfully"
+                )
+            );
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token");
+    }
+});
+
+/**
+ * @desc    Logout user / clear tokens from cookie & database
  * @route   POST /api/v1/auth/logout
  * @access  Private
  */
 export const logoutUser = asyncHandler(async (req, res) => {
+    // Clear refresh token stored in MongoDB
+    if (req.user?._id) {
+        await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: { refreshToken: null } },
+            { new: true }
+        );
+    }
+
     return res
         .status(200)
         .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
         .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 

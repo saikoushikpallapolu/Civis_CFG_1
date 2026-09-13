@@ -110,3 +110,115 @@ ${truncatedText}
 
     return await callGemini(prompt);
 }
+
+/**
+ * AI Correlation Engine:
+ * Analyzes structured objective answers and free-text opinions to produce:
+ * 1. Overall sentiment distribution (% positive, neutral, negative)
+ * 2. Top recurring themes
+ * 3. Executive summary for policymakers
+ * 4. Segmented correlation breakdown (slicing text comments by MCQ options)
+ * @param {Object} consultation - Consultation document with questions definition
+ * @param {Array} responses - Array of citizen response documents
+ * @returns {Promise<Object>} Structured analysis document ready for frontend charts & cards
+ */
+export async function generateCorrelationAnalysis(consultation, responses) {
+    if (!responses || responses.length === 0) {
+        throw new ApiError(400, "Cannot generate analysis without citizen responses");
+    }
+
+    // Build a compact summary of questions
+    const questionCatalog = consultation.questions.map((q) => ({
+        questionId: q.questionId,
+        text: q.text,
+        type: q.type,
+        options: q.options || [],
+    }));
+
+    // Package citizen submissions in a concise format for the LLM
+    // Sample if large (cap at 60 responses to stay well within token limits)
+    const sampledResponses = responses.slice(0, 60).map((r, idx) => {
+        const citizenAnswers = {};
+        (r.answers || []).forEach((a) => {
+            citizenAnswers[a.questionId] = a.value;
+        });
+        return {
+            id: `Respondent_${idx + 1}`,
+            answers: citizenAnswers,
+        };
+    });
+
+    const prompt = `
+You are the AI Chief Analyst for the Civis Citizen Feedback Analytics Platform.
+Your mission is to bridge the gap between objective multiple-choice choices and subjective free-text comments to produce decision-ready insights for lawmakers.
+
+CONSULTATION CONTEXT:
+Title: "${consultation.title}"
+Category: "${consultation.category}"
+Description: "${consultation.description}"
+
+QUESTION DEFINITIONS:
+${JSON.stringify(questionCatalog, null, 2)}
+
+CITIZEN RESPONSES (${responses.length} total, showing sample of ${sampledResponses.length}):
+${JSON.stringify(sampledResponses, null, 2)}
+
+TASK:
+Analyze all citizen submissions and generate a comprehensive synthesis matching this EXACT JSON schema:
+{
+  "overallSentiment": {
+    "positive": 65,  // Integer percentage (0-100)
+    "neutral": 20,   // Integer percentage (0-100)
+    "negative": 15   // Integer percentage (0-100, sum should roughly equal 100)
+  },
+  "topThemes": [
+    "Theme 1 (e.g. Reduced Commute Times)",
+    "Theme 2 (e.g. Fare Affordability)",
+    "Theme 3 (e.g. Last-Mile Safety)"
+  ],
+  "themeAnalysis": [
+    {
+      "theme": "Reduced Commute Times",
+      "sentiment": "positive", // "positive", "neutral", "negative", or "mixed"
+      "prevalence": 75, // Percentage of respondents (0-100) touching upon this theme
+      "description": "Majority of respondents praise the proposed dedicated rapid transit lines."
+    }
+  ],
+  "executiveSummary": "A concise 2-3 sentence executive summary of citizen feedback highlighting consensus and primary points of contention for policymakers.",
+  "actionableInsights": [
+    {
+      "recommendation": "Deploy GPS real-time bus tracking before fare adjustments",
+      "priority": "High", // "High", "Medium", or "Low"
+      "area": "Passenger Experience & Technology"
+    }
+  ],
+  "segmentBreakdown": [
+    {
+      "questionId": "q1", // The objective questionId being analyzed
+      "option": "Strongly Support", // The specific option selected
+      "sentiment": {
+        "positive": 90,
+        "neutral": 10,
+        "negative": 0
+      },
+      "themes": [
+        "Faster travel",
+        "Environmental benefit"
+      ],
+      "summary": "Supporters overwhelmingly believe dedicated corridors will reduce congestion.",
+      "sampleQuotes": [
+        "Up to 2 verbatim or representative citizen quotes (under 20 words) from citizens who picked this option."
+      ]
+    }
+  ]
+}
+
+CRITICAL RULES:
+- "themeAnalysis": extract 3-5 major themes with their sentiment and prevalence percentage (for rendering frontend theme bar charts).
+- "actionableInsights": provide 2-4 concrete, prioritized policy recommendations synthesized from citizen comments.
+- "segmentBreakdown": For each major objective question, produce an entry for each major option that received responses. Correlate what citizens who picked THAT specific option wrote in their text comments. Show WHY people disagree, not just that they disagree.
+- Return ONLY valid JSON matching the schema above.
+`;
+
+    return await callGemini(prompt);
+}

@@ -4,6 +4,7 @@ import {
     loginUser,
     logoutUser,
     getCurrentUser,
+    refreshAccessToken,
 } from "../controllers/auth.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
@@ -14,6 +15,7 @@ const router = Router();
 // Public routes
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
+router.route("/refresh-token").post(refreshAccessToken);
 
 // Protected routes (any authenticated role: citizen or admin)
 router.route("/logout").post(verifyJWT, logoutUser);

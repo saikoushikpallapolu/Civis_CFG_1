@@ -5,12 +5,13 @@ import { User } from "../models/user.model.js";
 
 export const verifyJWT = asyncHandler(async(req, _, next) => {
     try {
-        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
+        let token = req.cookies?.accessToken || req.header("Authorization");
         
-        // console.log(token);
         if (!token) {
             throw new ApiError(401, "Unauthorized request")
         }
+
+        token = token.replace(/^Bearer\s+/i, "").replace(/^Bearer\s+/i, "").trim();
     
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
     
@@ -28,3 +29,21 @@ export const verifyJWT = asyncHandler(async(req, _, next) => {
     }
     
 })
+
+export const optionalAuth = asyncHandler(async (req, _, next) => {
+    try {
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+        if (!token) {
+            req.user = null;
+            return next();
+        }
+
+        const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const user = await User.findById(decodedToken?._id).select("-passwordHash -password");
+        req.user = user || null;
+        next();
+    } catch {
+        req.user = null;
+        next();
+    }
+});

@@ -80,9 +80,30 @@ const analysisSchema = new Schema(
             type: [String],
             default: [],
         },
+        themeAnalysis: {
+            type: [
+                {
+                    theme: { type: String, required: true },
+                    sentiment: { type: String, enum: ["positive", "neutral", "negative", "mixed"], default: "neutral" },
+                    prevalence: { type: Number, min: 0, max: 100, default: 0 },
+                    description: { type: String, default: "" },
+                },
+            ],
+            default: [],
+        },
         executiveSummary: {
             type: String,
             default: "",
+        },
+        actionableInsights: {
+            type: [
+                {
+                    recommendation: { type: String, required: true },
+                    priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium" },
+                    area: { type: String, default: "" },
+                },
+            ],
+            default: [],
         },
         segmentBreakdown: {
             type: [segmentBreakdownSchema],

@@ -88,18 +88,47 @@ export const createConsultation = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getAllConsultations = asyncHandler(async (req, res) => {
-    const { status, category } = req.query;
+    const { status, category, search, q } = req.query;
 
     const filter = {};
-    if (status) filter.status = status;
-    if (category) filter.category = new RegExp(category, "i");
+    if (status) {
+        filter.status = status;
+    }
+
+    if (category?.trim()) {
+        filter.category = new RegExp(category.trim(), "i");
+    }
+
+    const searchTerm = (search || q || "").trim();
+    if (searchTerm) {
+        filter.$or = [
+            { title: new RegExp(searchTerm, "i") },
+            { description: new RegExp(searchTerm, "i") },
+        ];
+    }
 
     const consultations = await Consultation.find(filter)
         .populate("createdBy", "name email role")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
+
+    // Attach response counts to each consultation
+    const consultationIds = consultations.map(c => c._id);
+    const { Response } = await import("../models/response.model.js");
+    const counts = await Response.aggregate([
+        { $match: { consultationId: { $in: consultationIds } } },
+        { $group: { _id: "$consultationId", count: { $sum: 1 } } }
+    ]);
+
+    const countMap = new Map(counts.map(item => [item._id.toString(), item.count]));
+
+    const consultationsWithCounts = consultations.map(c => ({
+        ...c,
+        responseCount: countMap.get(c._id.toString()) || 0,
+    }));
 
     return res.status(200).json(
-        new ApiResponse(200, consultations, "Consultations retrieved successfully")
+        new ApiResponse(200, consultationsWithCounts, "Consultations retrieved successfully")
     );
 });
 
