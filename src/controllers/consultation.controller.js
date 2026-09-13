@@ -78,7 +78,14 @@ export const createConsultation = asyncHandler(async (req, res) => {
     });
 
     return res.status(201).json(
-        new ApiResponse(201, consultation, "Consultation created and published successfully")
+        new ApiResponse(
+            201,
+            {
+                ...consultation.toObject(),
+                consultation,
+            },
+            "Consultation created and published successfully"
+        )
     );
 });
 
@@ -128,7 +135,13 @@ export const getAllConsultations = asyncHandler(async (req, res) => {
     }));
 
     return res.status(200).json(
-        new ApiResponse(200, consultationsWithCounts, "Consultations retrieved successfully")
+        new ApiResponse(
+            200,
+            {
+                consultations: consultationsWithCounts,
+            },
+            "Consultations retrieved successfully"
+        )
     );
 });
 

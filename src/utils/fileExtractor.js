@@ -29,11 +29,23 @@ export async function extractPolicyText(file, rawText) {
         const fileBuffer = fs.readFileSync(filePath);
 
         if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
-            const pdfData = await pdf(fileBuffer);
-            if (!pdfData.text || pdfData.text.trim().length === 0) {
+            let extracted = "";
+            if (pdf.PDFParse) {
+                const uint8 = new Uint8Array(fileBuffer);
+                const parser = new pdf.PDFParse({ data: uint8 });
+                const pdfData = await parser.getText();
+                extracted = (pdfData.text || "").trim();
+            } else if (typeof pdf === "function") {
+                const pdfData = await pdf(fileBuffer);
+                extracted = (pdfData.text || "").trim();
+            } else {
+                throw new ApiError(500, "PDF parsing module is not configured properly");
+            }
+
+            if (!extracted || extracted.length === 0) {
                 throw new ApiError(400, "The uploaded PDF appears to be empty or contains scanned images without selectable text");
             }
-            return pdfData.text.trim();
+            return extracted;
         } else if (file.mimetype.startsWith("text/") || file.originalname.toLowerCase().endsWith(".txt")) {
             return fileBuffer.toString("utf-8").trim();
         } else {
