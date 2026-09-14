@@ -18,7 +18,9 @@ import {
   Landmark,
   ShieldAlert,
   X,
+  Scale,
 } from "lucide-react";
+import ConsultationComparisonModal from "../components/admin/ConsultationComparisonModal";
 
 export default function AdminDashboardPage() {
   const { t, currentLanguage } = useLanguage();
@@ -27,6 +29,8 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState("");
   const [deleteModalId, setDeleteModalId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
 
   const loadConsultations = () => {
     setLoading(true);
@@ -78,6 +82,12 @@ export default function AdminDashboardPage() {
       : "Good evening, Policy Officer";
 
   const targetConsultation = consultations.find((c) => c._id === deleteModalId);
+
+  const toggleSelectConsultation = (id) => {
+    setSelectedForCompare((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   return (
     <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -177,6 +187,35 @@ export default function AdminDashboardPage() {
           </span>
         </div>
 
+        {/* Multi-Select Comparison Action Banner */}
+        {selectedForCompare.length > 0 && (
+          <div className="bg-amber-50/90 border-b border-amber-200 px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
+              <Scale className="w-4 h-4 text-accent-gold" />
+              <span>
+                {selectedForCompare.length} Consultation{selectedForCompare.length > 1 ? "s" : ""} selected for comparative review
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedForCompare([])}
+                className="text-xs font-semibold text-brown-600 hover:text-brown-900 px-2 py-1 rounded"
+              >
+                Clear
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCompareModal(true)}
+                disabled={selectedForCompare.length < 2}
+                className="interactive-btn px-4 py-1.5 rounded-xl bg-brown-800 hover:bg-brown-900 text-brown-50 text-xs font-bold disabled:opacity-40 shadow-xs"
+              >
+                Compare Policies ({selectedForCompare.length})
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="p-6">
             <SkeletonCard type="table" count={4} />
@@ -202,6 +241,9 @@ export default function AdminDashboardPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-brown-50/80 text-brown-600 text-[11px] uppercase tracking-wider font-bold border-b border-brown-100">
                 <tr>
+                  <th className="px-4 py-4 w-10 text-center">
+                    <span className="sr-only">Select</span>
+                  </th>
                   <th className="px-6 py-4">Title & Category</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Inquiries</th>
@@ -213,9 +255,25 @@ export default function AdminDashboardPage() {
                 {consultations.map((c) => {
                   const displayTitle = (c.translations && c.translations[currentLanguage]?.title) || c.title;
                   const displayCategory = (c.translations && c.translations[currentLanguage]?.category) || c.category;
+                  const isSelected = selectedForCompare.includes(c._id);
 
                   return (
-                    <tr key={c._id} className="hover:bg-brown-50/60 transition-colors">
+                    <tr
+                      key={c._id}
+                      className={`transition-colors ${
+                        isSelected ? "bg-amber-50/50" : "hover:bg-brown-50/60"
+                      }`}
+                    >
+                      <td className="px-4 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectConsultation(c._id)}
+                          className="w-4 h-4 rounded text-brown-800 border-brown-300 focus:ring-brown-500 cursor-pointer"
+                          aria-label={`Select ${displayTitle} for comparison`}
+                        />
+                      </td>
+
                       <td className="px-6 py-4">
                         <div className="font-bold text-brown-950 font-serif">{displayTitle}</div>
                         <div className="text-xs text-brown-500 mt-0.5">
@@ -330,6 +388,16 @@ export default function AdminDashboardPage() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Multi-Policy Comparative Benchmarking Modal */}
+      <AnimatePresence>
+        {showCompareModal && (
+          <ConsultationComparisonModal
+            selectedIds={selectedForCompare}
+            onClose={() => setShowCompareModal(false)}
+          />
         )}
       </AnimatePresence>
     </AnimatedPage>

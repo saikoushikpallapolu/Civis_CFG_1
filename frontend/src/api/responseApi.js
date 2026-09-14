@@ -8,8 +8,10 @@ export const responseApi = {
     return res.data;
   },
 
-  getResponses: async (consultationId) => {
-    const res = await api.get(`/consultations/${consultationId}/responses`);
+  getResponses: async (consultationId, params = {}) => {
+    const res = await api.get(`/consultations/${consultationId}/responses`, {
+      params,
+    });
     return res.data;
   },
 };

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trash2, Plus, Sparkles, Send, CheckCircle2, ShieldCheck, Layers, Globe, AlertCircle } from "lucide-react";
+import { Trash2, Plus, Sparkles, Send, CheckCircle2, ShieldCheck, Layers, Globe, AlertCircle, ChevronUp, ChevronDown } from "lucide-react";
 import TooltipHover from "../common/TooltipHover";
 import { useLanguage } from "../../context/LanguageContext";
 import { consultationApi } from "../../api/consultationApi";
@@ -30,6 +30,15 @@ export default function QuestionEditor({
 
   const removeQuestion = (index) => {
     const updated = questions.filter((_, idx) => idx !== index);
+    onChange({ ...consultationData, questions: updated });
+  };
+
+  const moveQuestion = (index, direction) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= questions.length) return;
+    const updated = [...questions];
+    const [moved] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, moved);
     onChange({ ...consultationData, questions: updated });
   };
 
@@ -221,9 +230,36 @@ export default function QuestionEditor({
                 className="p-5 rounded-2xl border border-brown-200 bg-brown-50/40 space-y-4"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className="w-7 h-7 rounded-lg bg-brown-200 text-brown-800 text-xs font-bold flex items-center justify-center shrink-0 border border-brown-300/60 font-mono">
-                    {idx + 1}
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="w-7 h-7 rounded-lg bg-brown-200 text-brown-800 text-xs font-bold flex items-center justify-center shrink-0 border border-brown-300/60 font-mono">
+                      {idx + 1}
+                    </span>
+
+                    <div className="flex flex-col gap-0.5">
+                      <TooltipHover content="Move Question Up">
+                        <button
+                          type="button"
+                          onClick={() => moveQuestion(idx, -1)}
+                          disabled={idx === 0}
+                          className="p-0.5 rounded text-brown-500 hover:text-brown-900 hover:bg-brown-200/70 disabled:opacity-20 disabled:pointer-events-none transition-colors"
+                          aria-label="Move Question Up"
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </button>
+                      </TooltipHover>
+                      <TooltipHover content="Move Question Down">
+                        <button
+                          type="button"
+                          onClick={() => moveQuestion(idx, 1)}
+                          disabled={idx === questions.length - 1}
+                          className="p-0.5 rounded text-brown-500 hover:text-brown-900 hover:bg-brown-200/70 disabled:opacity-20 disabled:pointer-events-none transition-colors"
+                          aria-label="Move Question Down"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      </TooltipHover>
+                    </div>
+                  </div>
 
                   <input
                     type="text"

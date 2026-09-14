@@ -46,4 +46,10 @@ export const consultationApi = {
     const res = await api.post("/consultations/translate-draft", data);
     return res.data;
   },
+
+  compareConsultations: async (ids) => {
+    const idParam = Array.isArray(ids) ? ids.join(",") : ids;
+    const res = await api.get("/consultations/compare", { params: { ids: idParam } });
+    return res.data;
+  },
 };

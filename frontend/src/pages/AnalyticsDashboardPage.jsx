@@ -7,6 +7,7 @@ import ThemeBarChart from "../components/analytics/ThemeBarChart";
 import CorrelationStackedChart from "../components/analytics/CorrelationStackedChart";
 import ObjectiveChartCard from "../components/analytics/ObjectiveChartCard";
 import ActionableInsightsList from "../components/analytics/ActionableInsightsList";
+import RawResponsesTable from "../components/analytics/RawResponsesTable";
 import SkeletonCard from "../components/common/SkeletonCard";
 import AnimatedPage from "../components/common/AnimatedPage";
 import AnimatedCounter from "../components/common/AnimatedCounter";
@@ -19,6 +20,10 @@ import {
   Calendar,
   Landmark,
   ExternalLink,
+  Printer,
+  Table,
+  Sparkles,
+  FileDown,
 } from "lucide-react";
 
 export default function AnalyticsDashboardPage() {
@@ -28,6 +33,7 @@ export default function AnalyticsDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("all"); // "all" | "analytics" | "responses"
 
   const loadAnalytics = () => {
     setLoading(true);
@@ -63,6 +69,10 @@ export default function AnalyticsDashboardPage() {
     } finally {
       setIsRegenerating(false);
     }
+  };
+
+  const handleExportPDF = () => {
+    window.print();
   };
 
   if (loading) {
@@ -143,9 +153,22 @@ export default function AnalyticsDashboardPage() {
   }
 
   return (
-    <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 print:py-4 print:px-2">
+      {/* Official Printable Header (Visible during Print / Export PDF) */}
+      <div className="hidden print:block border-b-2 border-brown-800 pb-4 mb-6 text-center space-y-1">
+        <div className="text-xs font-bold uppercase tracking-widest text-brown-600">
+          Government of India • Ministry Policy Consultation Division
+        </div>
+        <h1 className="text-2xl font-bold text-brown-950 font-serif">
+          Statutory Consultation Executive Analytics Brief
+        </h1>
+        <div className="text-xs text-brown-500">
+          Gazetted Deliberation: <strong>{consultation.title}</strong> • Generated on {new Date().toLocaleDateString()}
+        </div>
+      </div>
+
       {/* Top Breadcrumb & Policy Title */}
-      <div className="space-y-3 pb-4 border-b border-brown-200">
+      <div className="space-y-3 pb-4 border-b border-brown-200 print:hidden">
         <Link
           to="/admin"
           className="interactive-btn inline-flex items-center space-x-1.5 text-xs font-bold text-brown-600 hover:text-brown-950 transition-colors"
@@ -169,62 +192,129 @@ export default function AnalyticsDashboardPage() {
             </h1>
           </div>
 
-          <Link
-            to={`/consultations/${consultation._id}`}
-            className="interactive-btn inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-brown-200 bg-white hover:bg-brown-50 text-xs font-bold text-brown-800 transition-colors self-start sm:self-auto shadow-2xs"
-          >
-            <span>Inspect Citizen Form</span>
-            <ExternalLink className="w-3 h-3" />
-          </Link>
-        </div>
-      </div>
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+            {/* Export PDF Brief Button */}
+            <button
+              type="button"
+              onClick={handleExportPDF}
+              className="interactive-btn inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-brown-300 bg-white hover:bg-brown-50 text-xs font-bold text-brown-800 shadow-2xs transition-colors"
+              title="Print or save as official PDF brief"
+            >
+              <FileDown className="w-3.5 h-3.5 text-accent-gold" />
+              <span>Export PDF Brief</span>
+            </button>
 
-      {/* 1. AI Executive Summary Card */}
-      <ExecutiveSummaryCard
-        summary={analysis?.executiveSummary}
-        generatedAt={analysis?.generatedAt}
-        isCached={isCached}
-        onRegenerate={handleRegenerate}
-        isRegenerating={isRegenerating}
-      />
-
-      {/* 2. Top-Level Qualitative Charts: Sentiment Donut + Key Themes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SentimentDonutChart
-          data={visualizations?.sentimentPieChart}
-          overallSentiment={analysis?.overallSentiment}
-        />
-        <ThemeBarChart data={visualizations?.themeBarChart} />
-      </div>
-
-      {/* 3. Deep AI Correlation Engine (Stacked Options Sliced by Sentiment) */}
-      <CorrelationStackedChart
-        data={visualizations?.segmentCorrelationChart}
-        segmentBreakdown={analysis?.segmentBreakdown || []}
-      />
-
-      {/* 4. Actionable Policy Recommendations List */}
-      <ActionableInsightsList insights={analysis?.actionableInsights || []} />
-
-      {/* 5. Objective Survey Distributions (MCQ Bar Charts) */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-brown-100">
-          <div>
-            <h3 className="text-lg font-bold text-brown-950 font-serif">
-              Objective Inquiry Distributions
-            </h3>
-            <p className="text-xs text-brown-500">
-              Direct mathematical tally of citizen choices across survey questions
-            </p>
+            <Link
+              to={`/consultations/${consultation._id}`}
+              className="interactive-btn inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-brown-200 bg-white hover:bg-brown-50 text-xs font-bold text-brown-800 transition-colors shadow-2xs"
+            >
+              <span>Inspect Citizen Form</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(visualizations?.objectiveDistributionCharts || []).map((q) => (
-            <ObjectiveChartCard key={q.questionId} question={q} />
-          ))}
+        {/* View Mode Navigation Tabs */}
+        <div className="flex items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("all")}
+            className={`interactive-btn px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "all"
+                ? "bg-brown-800 text-brown-50 shadow-2xs"
+                : "bg-brown-100/70 text-brown-700 hover:bg-brown-200/70"
+            }`}
+          >
+            All Insights & Submissions
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("analytics")}
+            className={`interactive-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "analytics"
+                ? "bg-brown-800 text-brown-50 shadow-2xs"
+                : "bg-brown-100/70 text-brown-700 hover:bg-brown-200/70"
+            }`}
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>AI Synthesis & Charts</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("responses")}
+            className={`interactive-btn inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTab === "responses"
+                ? "bg-brown-800 text-brown-50 shadow-2xs"
+                : "bg-brown-100/70 text-brown-700 hover:bg-brown-200/70"
+            }`}
+          >
+            <Table className="w-3.5 h-3.5" />
+            <span>Raw Submissions ({totalResponses})</span>
+          </button>
         </div>
       </div>
+
+      {/* SECTION A: Visual Analytics & Qualitative Synthesis */}
+      {(activeTab === "all" || activeTab === "analytics") && (
+        <div className="space-y-8">
+          {/* 1. AI Executive Summary Card */}
+          <ExecutiveSummaryCard
+            summary={analysis?.executiveSummary}
+            generatedAt={analysis?.generatedAt}
+            isCached={isCached}
+            onRegenerate={handleRegenerate}
+            isRegenerating={isRegenerating}
+          />
+
+          {/* 2. Top-Level Qualitative Charts: Sentiment Donut + Key Themes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SentimentDonutChart
+              data={visualizations?.sentimentPieChart}
+              overallSentiment={analysis?.overallSentiment}
+            />
+            <ThemeBarChart data={visualizations?.themeBarChart} />
+          </div>
+
+          {/* 3. Deep AI Correlation Engine (Stacked Options Sliced by Sentiment) */}
+          <CorrelationStackedChart
+            data={visualizations?.segmentCorrelationChart}
+            segmentBreakdown={analysis?.segmentBreakdown || []}
+          />
+
+          {/* 4. Actionable Policy Recommendations List */}
+          <ActionableInsightsList insights={analysis?.actionableInsights || []} />
+
+          {/* 5. Objective Survey Distributions (MCQ Bar Charts) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-brown-100">
+              <div>
+                <h3 className="text-lg font-bold text-brown-950 font-serif">
+                  Objective Inquiry Distributions
+                </h3>
+                <p className="text-xs text-brown-500">
+                  Direct mathematical tally of citizen choices across survey questions
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {(visualizations?.objectiveDistributionCharts || []).map((q) => (
+                <ObjectiveChartCard key={q.questionId} question={q} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION B: Raw Citizen Submissions Ledger (Audit & Drill-Down) */}
+      {(activeTab === "all" || activeTab === "responses") && (
+        <div className="pt-2">
+          <RawResponsesTable
+            consultationId={id}
+            questions={consultation.questions || []}
+          />
+        </div>
+      )}
     </AnimatedPage>
   );
 }
