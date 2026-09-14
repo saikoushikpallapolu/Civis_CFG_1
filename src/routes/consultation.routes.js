@@ -6,6 +6,8 @@ import {
     getConsultationById,
     updateConsultation,
     deleteConsultation,
+    translateConsultation,
+    translateDraftContent,
 } from "../controllers/consultation.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
@@ -28,6 +30,10 @@ router
     .route("/generate-questions")
     .post(verifyJWT, requireRole("admin"), upload.any(), generateQuestions);
 
+router
+    .route("/translate-draft")
+    .post(verifyJWT, requireRole("admin"), translateDraftContent);
+
 // 2. Consultation CRUD routes
 router
     .route("/")
@@ -39,6 +45,10 @@ router
     .get(getConsultationById)
     .patch(verifyJWT, requireRole("admin"), updateConsultation)
     .delete(verifyJWT, requireRole("admin"), deleteConsultation);
+
+router
+    .route("/:id/translate")
+    .post(translateConsultation);
 
 // 3. Citizen Response Submissions & Admin Responses View
 router

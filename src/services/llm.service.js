@@ -65,22 +65,24 @@ export async function generateQuestionsFromPolicy(policyText) {
     const truncatedText = policyText.slice(0, 25000);
 
     const prompt = `
-You are an expert civic policy advisor for Civis, an Indian citizen consultation and feedback analytics platform.
-A government official or foundation admin has uploaded the following policy document to create a public consultation.
+You are an expert civic policy communicator for Civis, an official citizen consultation and public feedback platform.
+A government official has uploaded a policy document to create a public consultation for ordinary citizens.
 
-Analyze the policy document below and generate a structured consultation form.
-The form must include:
-1. "title": A concise, citizen-friendly public consultation title.
-2. "summary": A clear 2-3 sentence overview explaining what the policy proposes and why citizen feedback is needed.
-3. "category": The most appropriate category (e.g., "Urban Mobility & Transport", "Environment & Pollution", "Public Health", "Education", "Civic Infrastructure", "Digital Governance").
-4. "questions": A curated list of 4 to 6 questions balanced between:
-   - Objective questions ("single_choice" or "multi_choice"): For measuring quantitative support, agreement levels, frequency, or demographic usage. Each must provide 3-5 distinct options (e.g. ["Strongly Support", "Support", "Neutral", "Oppose", "Strongly Oppose"]).
-   - Subjective questions ("text"): For gathering qualitative feedback, specific local concerns, reasons for dissent, or alternative suggestions. Options must be an empty array [].
-   
+Analyze the policy document below and generate a structured consultation form that ANY citizen can easily understand:
+1. "title": An engaging, crystal-clear, plain-language title (max 6 to 10 words).
+   - CRITICAL: Do NOT use complex legalistic phrases, act numbers, gazette codes, or bureaucratic jargon.
+   - Good examples: "Cleaner Air in City Centers: Vehicle Rules 2026", "Solar Power for Municipal Schools", "Safer Walking & Cycling Corridors".
+   - Bad examples: "S.O. 412(E) Implementation Directive under National Ambient Standards Act".
+2. "summary": A simple, compelling 2-sentence explanation in plain English. State clearly what is proposed and how citizen opinion will influence the final decision.
+3. "category": A clean, standardized civic portfolio name (e.g., "Environment & Climate", "Urban Infrastructure & Transport", "Public Health", "Digital Governance", "Education").
+4. "questions": 4 to 6 balanced, unbiased consultation questions in simple, everyday language:
+   - Objective questions ("single_choice" or "multi_choice"): For measuring quantitative sentiment. Provide 3-5 intuitive options.
+   - Subjective questions ("text"): For gathering qualitative feedback, local community issues, and suggestions. Options must be an empty array [].
+
 Each question object MUST follow this exact schema:
 {
-  "questionId": "q1", // unique string (q1, q2, q3...)
-  "text": "Clear, unbiased question prompt",
+  "questionId": "q1",
+  "text": "Clear, plain-language question prompt without confusing jargon",
   "type": "single_choice" | "multi_choice" | "text",
   "options": ["Option A", "Option B"] or [],
   "required": true | false
@@ -222,3 +224,121 @@ CRITICAL RULES:
 
     return await callGemini(prompt);
 }
+
+const LANGUAGE_NAMES = {
+    hi: "Hindi (हिंदी)",
+    te: "Telugu (తెలుగు)",
+    ta: "Tamil (தமிழ்)",
+    mr: "Marathi (मराठी)",
+    bn: "Bengali (বাংলা)",
+    en: "English",
+};
+
+/**
+ * Translate consultation title, description, and questions into an Indian regional language.
+ * Preserves exact questionId and choice order so responses can be mapped deterministically.
+ * @param {Object} consultation - Consultation document or object
+ * @param {string} targetLang - Target language code ('hi' | 'te' | 'ta' | 'mr' | 'bn')
+ * @returns {Promise<Object>} Translated consultation content
+ */
+export async function translateConsultationContent(consultation, targetLang) {
+    const langName = LANGUAGE_NAMES[targetLang] || targetLang;
+
+    const payloadToTranslate = {
+        title: consultation.title,
+        description: consultation.description,
+        category: consultation.category,
+        questions: (consultation.questions || []).map((q) => ({
+            questionId: q.questionId,
+            text: q.text,
+            options: q.options || [],
+        })),
+    };
+
+    const prompt = `
+You are a certified, professional civic translator specializing in official Indian governance and public policy communication.
+Translate the following public policy consultation into **${langName}**.
+
+REQUIREMENTS:
+1. Translate "title": Make it simple, clear, engaging, and in natural everyday ${langName} without convoluted jargon.
+2. Translate "description": Translate the statement of intent / summary clearly so any citizen reading ${langName} can easily comprehend the proposed bill.
+3. Translate "category": Translate into the standard ${langName} governmental portfolio term.
+4. Translate each item in "questions":
+   - Translate the "text" prompt into natural ${langName}.
+   - Translate each string in "options" into ${langName}.
+   - CRITICAL: KEEP "questionId" EXACTLY AS-IS without altering it.
+   - PRESERVE the exact array order of questions and options.
+
+JSON TO TRANSLATE:
+${JSON.stringify(payloadToTranslate, null, 2)}
+
+Respond ONLY with valid JSON matching this exact structure:
+{
+  "title": "translated title in ${langName}",
+  "description": "translated description in ${langName}",
+  "category": "translated category in ${langName}",
+  "questions": [
+    {
+      "questionId": "exact original questionId",
+      "text": "translated question prompt in ${langName}",
+      "options": ["translated option 1 in ${langName}", "translated option 2 in ${langName}"]
+    }
+  ]
+}
+`;
+
+    return await callGemini(prompt);
+}
+
+/**
+ * Fast batch translation for a list of consultation titles, descriptions, and categories.
+ * Used for instant multilingual rendering on the home page, citizen dashboard, and admin table.
+ * @param {Array<Object>} items - Array of { id, title, description, category }
+ * @param {string} targetLang - Target language code ('hi' | 'te' | 'ta' | 'mr' | 'bn')
+ * @returns {Promise<Array<Object>>} Translated items matching input ids
+ */
+export async function batchTranslateConsultationTitles(items, targetLang) {
+    if (!items || items.length === 0) return [];
+    const langName = LANGUAGE_NAMES[targetLang] || targetLang;
+
+    const payload = items.map(it => ({
+        id: String(it._id || it.id),
+        title: it.title,
+        description: it.description?.slice(0, 300) || "",
+        category: it.category,
+    }));
+
+    const prompt = `
+You are a professional civic translator for the Government of India.
+Translate the titles, descriptions, and categories of the following public policy consultations into **${langName}**.
+
+REQUIREMENTS:
+1. "title": Simple, crystal-clear, plain-language translation in ${langName}.
+2. "description": Concise, clear translation in ${langName}.
+3. "category": Standard civic portfolio name in ${langName}.
+4. Keep the exact "id" corresponding to each item.
+
+CONSULTATIONS TO TRANSLATE:
+${JSON.stringify(payload, null, 2)}
+
+Respond ONLY with a valid JSON array matching this schema:
+[
+  {
+    "id": "item id",
+    "title": "translated title in ${langName}",
+    "description": "translated description in ${langName}",
+    "category": "translated category in ${langName}"
+  }
+]
+`;
+
+    try {
+        const result = await callGemini(prompt);
+        return Array.isArray(result) ? result : [];
+    } catch (err) {
+        console.error("Batch title translation failed:", err.message);
+        return [];
+    }
+}
+
+

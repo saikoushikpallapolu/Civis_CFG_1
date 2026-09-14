@@ -57,6 +57,25 @@ const consultationSchema = new Schema(
             type: [questionSchema],
             default: [],
         },
+        translations: {
+            type: Map,
+            of: new Schema(
+                {
+                    title: String,
+                    description: String,
+                    category: String,
+                    questions: [
+                        {
+                            questionId: String,
+                            text: String,
+                            options: [String],
+                        },
+                    ],
+                },
+                { _id: false }
+            ),
+            default: {},
+        },
         createdBy: {
             type: Schema.Types.ObjectId,
             ref: "User",

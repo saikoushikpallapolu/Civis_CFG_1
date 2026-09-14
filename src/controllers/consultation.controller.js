@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Consultation } from "../models/consultation.model.js";
 import { extractPolicyText } from "../utils/fileExtractor.js";
-import { generateQuestionsFromPolicy } from "../services/llm.service.js";
+import { generateQuestionsFromPolicy, translateConsultationContent, batchTranslateConsultationTitles } from "../services/llm.service.js";
 import mongoose from "mongoose";
 
 /**
@@ -95,7 +95,7 @@ export const createConsultation = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getAllConsultations = asyncHandler(async (req, res) => {
-    const { status, category, search, q } = req.query;
+    const { status, category, search, q, lang } = req.query;
 
     const filter = {};
     if (status) {
@@ -129,10 +129,55 @@ export const getAllConsultations = asyncHandler(async (req, res) => {
 
     const countMap = new Map(counts.map(item => [item._id.toString(), item.count]));
 
-    const consultationsWithCounts = consultations.map(c => ({
-        ...c,
-        responseCount: countMap.get(c._id.toString()) || 0,
-    }));
+    // If a regional language is requested (e.g. 'te', 'hi', 'ta', 'mr', 'bn')
+    const targetLang = lang && lang !== "en" ? lang : null;
+    let translatedMap = new Map();
+
+    if (targetLang && consultations.length > 0) {
+        // Identify any consultations missing translation in targetLang
+        const missing = [];
+        consultations.forEach(c => {
+            const tr = c.translations && c.translations[targetLang];
+            if (tr?.title) {
+                translatedMap.set(c._id.toString(), tr);
+            } else {
+                missing.push(c);
+            }
+        });
+
+        if (missing.length > 0) {
+            try {
+                const batchTranslated = await batchTranslateConsultationTitles(missing, targetLang);
+                for (const item of batchTranslated) {
+                    translatedMap.set(item.id, item);
+                    // Persist to DB for instant future repeat loads
+                    Consultation.findByIdAndUpdate(item.id, {
+                        $set: {
+                            [`translations.${targetLang}.title`]: item.title,
+                            [`translations.${targetLang}.description`]: item.description,
+                            [`translations.${targetLang}.category`]: item.category,
+                        },
+                    }).catch(err => console.error("Error saving title translation:", err.message));
+                }
+            } catch (err) {
+                console.error("Batch title translation error:", err.message);
+            }
+        }
+    }
+
+    const consultationsWithCounts = consultations.map(c => {
+        const idStr = c._id.toString();
+        const tr = targetLang ? translatedMap.get(idStr) || (c.translations && c.translations[targetLang]) : null;
+
+        return {
+            ...c,
+            title: tr?.title || c.title,
+            category: tr?.category || c.category,
+            description: tr?.description || c.description,
+            originalTitle: c.title,
+            responseCount: countMap.get(idStr) || 0,
+        };
+    });
 
     return res.status(200).json(
         new ApiResponse(
@@ -217,3 +262,101 @@ export const deleteConsultation = asyncHandler(async (req, res) => {
         new ApiResponse(200, {}, "Consultation deleted successfully")
     );
 });
+
+/**
+ * @desc    Get or generate on-demand translation of a consultation into regional language
+ * @route   POST /api/v1/consultations/:id/translate
+ * @access  Public
+ */
+export const translateConsultation = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { targetLang } = req.body;
+
+    if (!targetLang) {
+        throw new ApiError(400, "targetLang is required (e.g. 'hi', 'te', 'ta', 'mr', 'bn')");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid consultation ID");
+    }
+
+    const consultation = await Consultation.findById(id);
+    if (!consultation) {
+        throw new ApiError(404, "Consultation not found");
+    }
+
+    if (targetLang === "en") {
+        return res.status(200).json(
+            new ApiResponse(200, {
+                title: consultation.title,
+                description: consultation.description,
+                category: consultation.category,
+                questions: consultation.questions,
+                cached: true,
+            }, "English content returned")
+        );
+    }
+
+    // 1. Check if translation is already cached in MongoDB
+    if (consultation.translations && typeof consultation.translations.get === "function" && consultation.translations.get(targetLang)) {
+        const cached = consultation.translations.get(targetLang);
+        return res.status(200).json(
+            new ApiResponse(200, {
+                title: cached.title,
+                description: cached.description,
+                category: cached.category,
+                questions: cached.questions,
+                cached: true,
+            }, `Translation retrieved from cache (${targetLang})`)
+        );
+    }
+
+    // 2. Not cached: invoke Gemini to translate
+    const translatedContent = await translateConsultationContent(consultation, targetLang);
+
+    // 3. Cache translation in MongoDB for instant future loads
+    try {
+        if (!consultation.translations) {
+            consultation.translations = new Map();
+        }
+        consultation.translations.set(targetLang, translatedContent);
+        await consultation.save();
+    } catch (saveErr) {
+        console.error("Failed to cache translation in MongoDB:", saveErr.message);
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            ...translatedContent,
+            cached: false,
+        }, `Translation generated and cached successfully (${targetLang})`)
+    );
+});
+
+/**
+ * @desc    AI Feature: Translate a draft consultation before it is published
+ * @route   POST /api/v1/consultations/translate-draft
+ * @access  Private (Admin only)
+ */
+export const translateDraftContent = asyncHandler(async (req, res) => {
+    const { title, description, summary, category, questions = [], targetLang } = req.body;
+
+    if (!targetLang) {
+        throw new ApiError(400, "targetLang is required");
+    }
+
+    const translated = await translateConsultationContent(
+        {
+            title: title || "Public Consultation",
+            description: description || summary || "Public policy briefing",
+            category: category || "Public Policy",
+            questions,
+        },
+        targetLang
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, translated, `Draft translated to ${targetLang} successfully`)
+    );
+});
+
