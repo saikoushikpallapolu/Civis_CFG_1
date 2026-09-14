@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { Vote, LogIn, AlertCircle, ShieldCheck } from "lucide-react";
+import { Landmark, LogIn, AlertCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import AnimatedPage from "../components/common/AnimatedPage";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,7 +31,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || "Invalid email or password. Please try again."
+        err.response?.data?.message || "Invalid credentials. Please verify your national email and password."
       );
     } finally {
       setIsSubmitting(false);
@@ -42,30 +44,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 p-8 shadow-xl shadow-slate-200/50 space-y-6">
+    <AnimatedPage className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-xs rounded-3xl border border-brown-200 p-8 shadow-xs space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md shadow-indigo-200">
-            <Vote className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl bg-brown-800 text-amber-200 flex items-center justify-center mx-auto shadow-xs border border-brown-700">
+            <Landmark className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-black text-slate-900 font-outfit">
-            Sign In to Civis
+          <h2 className="text-2xl font-bold text-brown-950 font-serif">
+            Portal Access
           </h2>
-          <p className="text-xs text-slate-500">
-            Access citizen consultations or policymaker analytics
+          <p className="text-xs text-brown-500 font-medium">
+            Civic Consultation & Policy Deliberation System
           </p>
         </div>
 
         {error && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 flex items-center space-x-2">
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-gov-red flex items-center space-x-2"
+          >
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
-          </div>
+          </motion.div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-brown-700 uppercase tracking-wider mb-1.5">
               Email Address
             </label>
             <input
@@ -73,13 +79,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. citizen@example.com"
-              className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              placeholder="e.g. officer@civis.gov or citizen@example.com"
+              className="w-full p-3 rounded-xl border border-brown-200 bg-brown-50/30 text-brown-900 placeholder-brown-400 text-sm focus:ring-2 focus:ring-brown-500/30 focus:border-brown-500 focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-brown-700 uppercase tracking-wider mb-1.5">
               Password
             </label>
             <input
@@ -88,38 +94,38 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="w-full p-3 rounded-xl border border-brown-200 bg-brown-50/30 text-brown-900 placeholder-brown-400 text-sm focus:ring-2 focus:ring-brown-500/30 focus:border-brown-500 focus:outline-none transition-all"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-200 transition-all disabled:opacity-50"
+            className="interactive-btn w-full py-3 rounded-xl bg-brown-700 hover:bg-brown-800 text-brown-50 font-semibold text-sm shadow-xs transition-all disabled:opacity-50 border border-brown-800"
           >
-            {isSubmitting ? "Signing in..." : "Sign In"}
+            {isSubmitting ? "Authenticating..." : "Sign In to Portal"}
           </button>
         </form>
 
         {/* Demo Credentials Helper */}
-        <div className="pt-4 border-t border-slate-100 text-center">
+        <div className="pt-4 border-t border-brown-100 text-center">
           <button
             type="button"
             onClick={setTestAdmin}
-            className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition-colors"
+            className="interactive-btn inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-amber-50 text-amber-900 text-xs font-semibold hover:bg-amber-100 border border-amber-200 transition-colors"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
-            <span>Fill Admin Demo Credentials (admin@civis.vote)</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-accent-gold" />
+            <span>Load Policy Officer Demo (admin@civis.vote)</span>
           </button>
         </div>
 
-        <p className="text-xs text-center text-slate-500">
-          Don't have an account?{" "}
-          <Link to="/register" className="font-bold text-indigo-600 hover:underline">
-            Register here
+        <p className="text-xs text-center text-brown-500">
+          New citizen participant?{" "}
+          <Link to="/register" className="font-bold text-accent-gold hover:underline">
+            Register for verification
           </Link>
         </p>
       </div>
-    </div>
+    </AnimatedPage>
   );
 }

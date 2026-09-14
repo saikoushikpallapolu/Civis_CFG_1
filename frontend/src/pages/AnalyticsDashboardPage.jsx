@@ -7,14 +7,18 @@ import ThemeBarChart from "../components/analytics/ThemeBarChart";
 import CorrelationStackedChart from "../components/analytics/CorrelationStackedChart";
 import ObjectiveChartCard from "../components/analytics/ObjectiveChartCard";
 import ActionableInsightsList from "../components/analytics/ActionableInsightsList";
-import LoadingSpinner from "../components/common/LoadingSpinner";
+import SkeletonCard from "../components/common/SkeletonCard";
+import AnimatedPage from "../components/common/AnimatedPage";
+import AnimatedCounter from "../components/common/AnimatedCounter";
+import StatusPulse from "../components/common/StatusPulse";
 import {
   ArrowLeft,
   Users,
   AlertCircle,
   BarChart3,
   Calendar,
-  Vote,
+  Landmark,
+  ExternalLink,
 } from "lucide-react";
 
 export default function AnalyticsDashboardPage() {
@@ -62,24 +66,33 @@ export default function AnalyticsDashboardPage() {
   };
 
   if (loading) {
-    return <LoadingSpinner text="Computing survey analytics & AI correlation..." />;
+    return (
+      <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        <div className="h-8 w-48 animate-shimmer rounded-lg" />
+        <SkeletonCard type="chart" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard type="chart" />
+          <SkeletonCard type="chart" />
+        </div>
+      </AnimatedPage>
+    );
   }
 
   if (error && !analyticsData) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+      <AnimatedPage className="max-w-2xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-12 h-12 rounded-full bg-rose-100 text-gov-red flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900">{error}</h2>
+        <h2 className="text-xl font-bold text-brown-900 font-serif">{error}</h2>
         <Link
           to="/admin"
-          className="inline-flex items-center space-x-1 text-sm font-semibold text-indigo-600"
+          className="inline-flex items-center space-x-1 text-sm font-semibold text-accent-gold hover:underline"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Admin Hub</span>
+          <span>Return to Officer Hub</span>
         </Link>
-      </div>
+      </AnimatedPage>
     );
   }
 
@@ -94,70 +107,74 @@ export default function AnalyticsDashboardPage() {
   // If no responses yet
   if (totalResponses === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
+      <AnimatedPage className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
         <Link
           to="/admin"
-          className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors"
+          className="interactive-btn inline-flex items-center space-x-1.5 text-xs font-bold text-brown-600 hover:text-brown-950 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Admin Hub</span>
+          <span>Return to Officer Hub</span>
         </Link>
 
-        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 shadow-sm">
-          <Vote className="w-12 h-12 text-slate-300 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-800">
-            Awaiting Citizen Responses
+        <div className="bg-white/90 backdrop-blur-xs rounded-3xl border border-brown-200 p-12 text-center space-y-4 shadow-xs">
+          <div className="flex justify-center">
+            <StatusPulse label="Awaiting Deliberation Responses" status="standby" />
+          </div>
+          <Landmark className="w-12 h-12 text-brown-300 mx-auto mt-2" />
+          <h2 className="text-xl font-bold text-brown-950 font-serif">
+            Awaiting Citizen Submissions
           </h2>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
-            No citizens have submitted feedback for{" "}
-            <strong>"{consultation.title}"</strong> yet. The AI correlation engine
-            will synthesize insights as soon as responses start coming in.
+          <p className="text-sm text-brown-600 max-w-md mx-auto leading-relaxed">
+            No citizen submissions have been recorded for{" "}
+            <strong className="text-brown-900">"{consultation.title}"</strong> yet. The AI correlation engine
+            synthesizes qualitative cohorts as soon as citizen feedback is recorded.
           </p>
-          <div className="pt-2">
+          <div className="pt-3">
             <Link
               to={`/consultations/${consultation._id}`}
-              className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-all"
+              className="interactive-btn inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-brown-800 hover:bg-brown-900 text-brown-50 font-semibold text-sm transition-all shadow-xs border border-brown-900"
             >
-              <span>Submit a Test Citizen Response</span>
+              <span>Submit Test Response as Citizen</span>
             </Link>
           </div>
         </div>
-      </div>
+      </AnimatedPage>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <AnimatedPage className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Top Breadcrumb & Policy Title */}
-      <div className="space-y-3">
+      <div className="space-y-3 pb-4 border-b border-brown-200">
         <Link
           to="/admin"
-          className="inline-flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors"
+          className="interactive-btn inline-flex items-center space-x-1.5 text-xs font-bold text-brown-600 hover:text-brown-950 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Admin Hub</span>
+          <span>Return to Officer Hub</span>
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center space-x-2 mb-1">
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+            <div className="flex items-center space-x-2 mb-1.5">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-brown-100 text-brown-800 border border-brown-200">
                 {consultation.category}
               </span>
-              <span className="text-xs font-semibold text-slate-400">
-                • {totalResponses} Total Citizen Submissions
+              <span className="text-xs font-semibold text-brown-500">
+                • <AnimatedCounter value={totalResponses} suffix=" Citizen Submissions Recorded" />
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 font-outfit">
+            <h1 className="text-2xl sm:text-3xl font-bold text-brown-950 font-serif">
               {consultation.title}
             </h1>
           </div>
 
           <Link
             to={`/consultations/${consultation._id}`}
-            className="inline-flex items-center space-x-1 px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors self-start sm:self-auto"
+            className="interactive-btn inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-brown-200 bg-white hover:bg-brown-50 text-xs font-bold text-brown-800 transition-colors self-start sm:self-auto shadow-2xs"
           >
-            <span>View Public Consultation</span>
+            <span>Inspect Citizen Form</span>
+            <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
       </div>
@@ -191,13 +208,15 @@ export default function AnalyticsDashboardPage() {
 
       {/* 5. Objective Survey Distributions (MCQ Bar Charts) */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-900 font-outfit">
-            Objective Question Distributions
-          </h3>
-          <span className="text-xs text-slate-500">
-            Direct mathematical tally of citizen choices
-          </span>
+        <div className="flex items-center justify-between pb-2 border-b border-brown-100">
+          <div>
+            <h3 className="text-lg font-bold text-brown-950 font-serif">
+              Objective Inquiry Distributions
+            </h3>
+            <p className="text-xs text-brown-500">
+              Direct mathematical tally of citizen choices across survey questions
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -206,6 +225,6 @@ export default function AnalyticsDashboardPage() {
           ))}
         </div>
       </div>
-    </div>
+    </AnimatedPage>
   );
 }

@@ -36,4 +36,14 @@ export const consultationApi = {
     const res = await api.delete(`/consultations/${id}`);
     return res.data;
   },
+
+  translateConsultation: async (id, targetLang) => {
+    const res = await api.post(`/consultations/${id}/translate`, { targetLang });
+    return res.data;
+  },
+
+  translateDraft: async (data) => {
+    const res = await api.post("/consultations/translate-draft", data);
+    return res.data;
+  },
 };

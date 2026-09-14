@@ -1,24 +1,29 @@
 import React from "react";
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
+import AnimatedCounter from "../common/AnimatedCounter";
 
 export default function SentimentDonutChart({ data = [], overallSentiment = {} }) {
   const { positive = 0, neutral = 0, negative = 0 } = overallSentiment;
 
-  const chartData = data && data.length > 0 ? data : [
-    { name: "Positive", value: positive, color: "#10B981" },
-    { name: "Neutral", value: neutral, color: "#6B7280" },
-    { name: "Negative", value: negative, color: "#EF4444" },
-  ];
+  // Dignified government sentiment colors: muted teal, muted warm brown, muted warm red
+  const chartData =
+    data && data.length > 0
+      ? data
+      : [
+          { name: "Supportive", value: positive, color: "hsl(152, 42%, 38%)" },
+          { name: "Neutral / Inconclusive", value: neutral, color: "hsl(25, 20%, 65%)" },
+          { name: "Critical / Opposed", value: negative, color: "hsl(5, 55%, 48%)" },
+        ];
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+    <div className="bg-white/90 backdrop-blur-xs p-6 rounded-2xl border border-brown-200 shadow-xs flex flex-col justify-between">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Overall Sentiment</h3>
-          <p className="text-xs text-slate-500">AI sentiment distribution across citizen feedback</p>
+          <h3 className="text-base font-bold text-brown-900 font-serif">Public Sentiment Stance</h3>
+          <p className="text-xs text-brown-500">Distribution across qualitative written submissions</p>
         </div>
-        <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-          {positive}% Net Positive
+        <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 text-gov-teal border border-emerald-200">
+          <AnimatedCounter value={positive} suffix="% Net Support" />
         </span>
       </div>
 
@@ -29,21 +34,24 @@ export default function SentimentDonutChart({ data = [], overallSentiment = {} }
             <Tooltip
               formatter={(value, name) => [`${value}%`, name]}
               contentStyle={{
-                backgroundColor: "#0f172a",
-                borderRadius: "8px",
-                border: "none",
+                backgroundColor: "hsl(14, 42%, 13%)",
+                borderRadius: "10px",
+                border: "1px solid hsl(26, 20%, 30%)",
                 color: "#fff",
                 fontSize: "12px",
+                boxShadow: "0 10px 25px -5px rgba(0,0,0,0.3)",
               }}
             />
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={55}
-              outerRadius={80}
+              innerRadius={58}
+              outerRadius={82}
               paddingAngle={4}
               dataKey="value"
+              animationBegin={100}
+              animationDuration={1000}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -54,24 +62,34 @@ export default function SentimentDonutChart({ data = [], overallSentiment = {} }
 
         {/* Center label */}
         <div className="absolute flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-extrabold text-slate-900 font-outfit">{positive}%</span>
-          <span className="text-[10px] uppercase font-bold text-slate-400">Positive</span>
+          <span className="text-2xl font-extrabold text-brown-950 font-serif">
+            <AnimatedCounter value={positive} suffix="%" />
+          </span>
+          <span className="text-[10px] uppercase font-bold text-brown-400 tracking-wider">
+            Supportive
+          </span>
         </div>
       </div>
 
       {/* Legend / Metrics */}
-      <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 text-center">
-        <div className="p-2 rounded-xl bg-emerald-50/50 border border-emerald-100">
-          <div className="text-xs font-semibold text-emerald-800">Positive</div>
-          <div className="text-base font-bold text-emerald-600">{positive}%</div>
+      <div className="grid grid-cols-3 gap-2 pt-4 border-t border-brown-100 text-center">
+        <div className="p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-200/60">
+          <div className="text-[11px] font-semibold text-gov-teal">Supportive</div>
+          <div className="text-base font-bold text-emerald-800">
+            <AnimatedCounter value={positive} suffix="%" />
+          </div>
         </div>
-        <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-          <div className="text-xs font-semibold text-slate-700">Neutral</div>
-          <div className="text-base font-bold text-slate-600">{neutral}%</div>
+        <div className="p-2.5 rounded-xl bg-brown-50 border border-brown-200/80">
+          <div className="text-[11px] font-semibold text-brown-600">Neutral</div>
+          <div className="text-base font-bold text-brown-800">
+            <AnimatedCounter value={neutral} suffix="%" />
+          </div>
         </div>
-        <div className="p-2 rounded-xl bg-rose-50/50 border border-rose-100">
-          <div className="text-xs font-semibold text-rose-800">Negative</div>
-          <div className="text-base font-bold text-rose-600">{negative}%</div>
+        <div className="p-2.5 rounded-xl bg-rose-50/60 border border-rose-200/60">
+          <div className="text-[11px] font-semibold text-gov-red">Critical</div>
+          <div className="text-base font-bold text-rose-800">
+            <AnimatedCounter value={negative} suffix="%" />
+          </div>
         </div>
       </div>
     </div>
