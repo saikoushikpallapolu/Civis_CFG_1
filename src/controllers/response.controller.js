@@ -119,20 +119,39 @@ export const getConsultationResponses = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Consultation not found");
     }
 
-    // 2. Creator Ownership Check: Only the admin who created this consultation can view its responses
-    const isCreator = consultation.createdBy.equals(req.user._id);
-    if (!isCreator) {
+    // 2. Creator Ownership or Admin Role Check
+    const isAuthorized = consultation.createdBy.equals(req.user._id) || req.user.role === "admin";
+    if (!isAuthorized) {
         throw new ApiError(
             403,
-            "Access denied: You can only view responses for consultations created by your account"
+            "Access denied: Administrative privileges required to view raw responses"
         );
     }
 
-    // 3. Paginated responses
+    // 3. Paginated responses with search & filter support
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 20));
+    const search = (req.query.search || "").trim();
+    const filterQuestionId = (req.query.filterQuestionId || "").trim();
+    const filterValue = (req.query.filterValue || "").trim();
 
     const filter = { consultationId };
+
+    if (filterQuestionId && filterValue) {
+        filter["answers"] = {
+            $elemMatch: {
+                questionId: filterQuestionId,
+                value: filterValue,
+            },
+        };
+    }
+
+    if (search) {
+        filter.$or = [
+            { "answers.value": new RegExp(search, "i") },
+        ];
+    }
+
     const total = await Response.countDocuments(filter);
     const responses = await Response.find(filter)
         .populate("citizenId", "name email role")
@@ -150,6 +169,7 @@ export const getConsultationResponses = asyncHandler(async (req, res) => {
                     category: consultation.category,
                     status: consultation.status,
                     totalQuestions: consultation.questions?.length || 0,
+                    questions: consultation.questions || [],
                 },
                 totalResponses: total,
                 page,

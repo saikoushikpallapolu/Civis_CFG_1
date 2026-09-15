@@ -360,3 +360,76 @@ export const translateDraftContent = asyncHandler(async (req, res) => {
     );
 });
 
+/**
+ * @desc    Compare multiple consultations side-by-side (metrics, sentiment, themes)
+ * @route   GET /api/v1/consultations/compare?ids=id1,id2
+ * @access  Private (Admin / Lawmaker)
+ */
+export const compareConsultations = asyncHandler(async (req, res) => {
+    let rawIds = req.query.ids || req.body.ids;
+    if (typeof rawIds === "string") {
+        rawIds = rawIds.split(",").map((id) => id.trim()).filter(Boolean);
+    }
+
+    if (!Array.isArray(rawIds) || rawIds.length < 2) {
+        throw new ApiError(400, "At least 2 consultation IDs are required for comparison");
+    }
+
+    const validIds = rawIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+    if (validIds.length < 2) {
+        throw new ApiError(400, "At least 2 valid consultation IDs must be provided");
+    }
+
+    const consultations = await Consultation.find({ _id: { $in: validIds } })
+        .populate("createdBy", "name email role")
+        .lean();
+
+    const { Response } = await import("../models/response.model.js");
+    const { Analysis } = await import("../models/analysis.model.js");
+
+    const counts = await Response.aggregate([
+        { $match: { consultationId: { $in: validIds.map((id) => new mongoose.Types.ObjectId(id)) } } },
+        { $group: { _id: "$consultationId", count: { $sum: 1 } } },
+    ]);
+    const countMap = new Map(counts.map((c) => [c._id.toString(), c.count]));
+
+    const analyses = await Analysis.find({ consultationId: { $in: validIds } }).lean();
+    const analysisMap = new Map(analyses.map((a) => [a.consultationId.toString(), a]));
+
+    const comparisonItems = consultations.map((c) => {
+        const idStr = c._id.toString();
+        const a = analysisMap.get(idStr);
+        const respCount = countMap.get(idStr) || 0;
+
+        return {
+            _id: c._id,
+            title: c.title,
+            category: c.category,
+            status: c.status,
+            createdAt: c.createdAt,
+            totalQuestions: c.questions?.length || 0,
+            responseCount: respCount,
+            overallSentiment: a?.overallSentiment || { positive: 0, neutral: 0, negative: 0 },
+            topThemes: a?.topThemes || [],
+            executiveSummary: a?.executiveSummary || "No AI synthesis generated yet.",
+            actionableInsightsCount: a?.actionableInsights?.length || 0,
+        };
+    });
+
+    const totalCombinedResponses = comparisonItems.reduce((acc, c) => acc + c.responseCount, 0);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                consultations: comparisonItems,
+                summary: {
+                    comparedCount: comparisonItems.length,
+                    totalCombinedResponses,
+                },
+            },
+            "Consultations compared successfully"
+        )
+    );
+});
+

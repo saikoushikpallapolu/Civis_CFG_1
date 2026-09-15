@@ -8,6 +8,7 @@ import {
     deleteConsultation,
     translateConsultation,
     translateDraftContent,
+    compareConsultations,
 } from "../controllers/consultation.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
@@ -34,7 +35,13 @@ router
     .route("/translate-draft")
     .post(verifyJWT, requireRole("admin"), translateDraftContent);
 
-// 2. Consultation CRUD routes
+// 2. Multi-consultation comparison (MUST be defined before /:id)
+router
+    .route("/compare")
+    .get(verifyJWT, requireRole("admin"), compareConsultations)
+    .post(verifyJWT, requireRole("admin"), compareConsultations);
+
+// 3. Consultation CRUD routes
 router
     .route("/")
     .get(getAllConsultations)
